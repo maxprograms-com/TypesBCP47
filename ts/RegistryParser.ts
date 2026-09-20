@@ -365,9 +365,22 @@ export class RegistryParser {
             // try with a variant
             if (!isPrivateLang) {
                 let variant: Variant | undefined = this.variants.get(parts[1].toLowerCase());
-                if (variant && variant.getPrefix() === parts[0].toLowerCase()) {
-                    // variant is valid for the language code
-                    return parts[0].toLowerCase() + '-' + variant.getCode();
+                if (variant) {
+                    let prefix: string = variant.getPrefix();
+                    if (prefix.indexOf('\|') != -1) {
+                        let prefixes: Array<string> = prefix.split('\|');
+                        for (let p of prefixes) {
+                            p = p.trim();
+                            if (p === parts[0].toLowerCase()) {
+                                // variant is valid for the language code
+                                return parts[0].toLowerCase() + '-' + variant.getCode();
+                            }
+                        }
+                    }
+                    if (variant.getPrefix() === parts[0].toLowerCase()) {
+                        // variant is valid for the language code
+                        return parts[0].toLowerCase() + '-' + variant.getCode();
+                    }
                 }
             }
         } else if (parts.length == 3) {
@@ -393,9 +406,23 @@ export class RegistryParser {
                     }
                     if (!isPrivateLang) {
                         let variant: Variant | undefined = this.variants.get(parts[2].toLowerCase());
-                        if (variant && variant.getPrefix() === parts[0].toLowerCase()) {
-                            // variant is valid for the language code
-                            return parts[0].toLowerCase() + '-' + scrCode + '-' + variant.getCode();
+                        if (variant) {
+                            let fullPrefix: string = parts[0].toLowerCase() + '-' + scrCode;
+                            const prefix: string = variant.getPrefix();
+                            if (prefix.indexOf('|') !== -1) {
+                                let prefixes: string[] = prefix.split('|');
+                                for (let p of prefixes) {
+                                    p = p.trim();
+                                    if (p === fullPrefix) {
+                                        // variant is valid for the language code
+                                        return parts[0].toLowerCase() + '-' + scrCode + '-' + variant.getCode();
+                                    }
+                                }
+                            }
+                            if (variant.getPrefix() === parts[0].toLowerCase()) {
+                                // variant is valid for the language code
+                                return parts[0].toLowerCase() + '-' + scrCode + '-' + variant.getCode();
+                            }
                         }
                     }
                 }
@@ -415,6 +442,26 @@ export class RegistryParser {
                     // For private-use languages with regions, return normalized code
                     if (isPrivateLang) {
                         return parts[0].toLowerCase() + '-' + regCode;
+                    }
+                }
+                // try with a variant
+                let variant: Variant | undefined = this.variants.get(parts[2].toLowerCase());
+                if (variant) {
+                    let fullPrefix: string = parts[0].toLowerCase() + '-' + parts[1].toLowerCase();
+                    let prefix: string = variant.getPrefix();
+                    if (prefix.indexOf('|') !== -1) {
+                        let prefixes: string[] = prefix.split('|');
+                        for (let p of prefixes) {
+                            p = p.trim();
+                            if (p === parts[0].toLowerCase()) {
+                                // variant is valid for the language code
+                                return fullPrefix + '-' + variant.getCode();
+                            }
+                        }
+                    }
+                    if (variant.getPrefix() === fullPrefix) {
+                        // variant is valid for the language code
+                        return fullPrefix + '-' + variant.getCode();
                     }
                 }
             }
