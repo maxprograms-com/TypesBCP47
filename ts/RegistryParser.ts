@@ -266,9 +266,22 @@ export class RegistryParser {
             // try with a variant
             if (!isPrivateLang) {
                 let variant: Variant | undefined = this.variants.get(parts[1].toLowerCase());
-                if (variant && variant.getPrefix() === parts[0].toLowerCase()) {
-                    // variant is valid for the language code
-                    return langDesc + ' (' + variant.getDescription() + ')';
+                if (variant) {
+                    let prefix: string = variant.getPrefix();
+                    if (prefix.indexOf('|') !== -1) {
+                        let prefixes: string[] = prefix.split('|');
+                        for (let p of prefixes) {
+                            p = p.trim();
+                            if (p === parts[0].toLowerCase()) {
+                                // variant is valid for the language code
+                                return langDesc + ' (' + variant.getDescription() + ')';
+                            }
+                        }
+                    }
+                    if (prefix === parts[0].toLowerCase()) {
+                        // variant is valid for the language code
+                        return langDesc + ' (' + variant.getDescription() + ')';
+                    }
                 }
             }
             if (isPrivateLang) {
@@ -298,9 +311,23 @@ export class RegistryParser {
                     }
                     if (!isPrivateLang) {
                         let variant: Variant | undefined = this.variants.get(parts[2].toLowerCase());
-                        if (variant && variant.getPrefix() === parts[0].toLowerCase()) {
-                            // variant is valid for the language code
-                            return langDesc + ' (' + scrDesc + ', ' + variant.getDescription() + ')';
+                        if (variant) {
+                            let fullPrefix: string = parts[0].toLowerCase() + '-' + script;
+                            let prefix: string = variant.getPrefix();
+                            if (prefix.indexOf('|') !== -1) {
+                                let prefixes: string[] = prefix.split('|');
+                                for (let p of prefixes) {
+                                    p = p.trim();
+                                    if (p === fullPrefix) {
+                                        // variant is valid for the language code
+                                        return langDesc + ' (' + scrDesc + ', ' + variant.getDescription() + ')';
+                                    }
+                                }
+                            }
+                            if (prefix === fullPrefix) {
+                                // variant is valid for the language code
+                                return langDesc + ' (' + scrDesc + ', ' + variant.getDescription() + ')';
+                            }
                         }
                     }
                 }
@@ -312,14 +339,49 @@ export class RegistryParser {
                     let regDesc: string = isPrivateReg ? 'Private Use' : this.regions.get(parts[1].toUpperCase())!.getDescription();
                     if (!isPrivateLang) {
                         let variant: Variant | undefined = this.variants.get(parts[2].toLowerCase());
-                        if (variant && variant.getPrefix() === parts[0].toLowerCase()) {
-                            // variant is valid for the language code
-                            return langDesc + ' (' + regDesc + ' - ' + variant.getDescription() + ')';
+                        if (variant) {
+                            let fullPrefix: string = parts[0].toLowerCase() + '-' + parts[1].toUpperCase();
+                            let prefix: string = variant.getPrefix();
+                            if (prefix.indexOf('|') !== -1) {
+                                let prefixes: string[] = prefix.split('|');
+                                for (let p of prefixes) {
+                                    p = p.trim();
+                                    if (p === fullPrefix) {
+                                        // variant is valid for the language code
+                                        return langDesc + ' (' + regDesc + ' - ' + variant.getDescription() + ')';
+                                    }
+                                }
+                            }
+                            if (prefix === fullPrefix) {
+                                // variant is valid for the language code
+                                return langDesc + ' (' + regDesc + ' - ' + variant.getDescription() + ')';
+                            }
                         }
                     }
                     // For private-use languages with regions, return description
                     if (isPrivateLang) {
                         return langDesc + ' (' + regDesc + ')';
+                    }
+                }
+                if (!isPrivateLang) {
+                    let variant: Variant | undefined = this.variants.get(parts[2].toLowerCase());
+                    if (variant) {
+                        let fullPrefix: string = parts[0].toLowerCase() + '-' + parts[1].toLowerCase();
+                        let prefix: string = variant.getPrefix();
+                        if (prefix.indexOf('|') !== -1) {
+                            let prefixes: string[] = prefix.split('|');
+                            for (let p of prefixes) {
+                                p = p.trim();
+                                if (p === fullPrefix) {
+                                    // variant is valid for the preceding variant
+                                    return langDesc + ' (' + variant.getDescription() + ')';
+                                }
+                            }
+                        }
+                        if (prefix === fullPrefix) {
+                            // variant is valid for the preceding variant
+                            return langDesc + ' (' + variant.getDescription() + ')';
+                        }
                     }
                 }
             }

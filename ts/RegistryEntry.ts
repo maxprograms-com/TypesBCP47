@@ -17,9 +17,23 @@ export class RegistryEntry {
     constructor(entry: string) {
         this.entryMap = new Map<string, string>();
         let lines = entry.split('\n');
+        let lastType: string | undefined;
         for (let line of lines) {
-            let type: string = line.substring(0, line.indexOf(':')).trim();
-            let value: string = line.substring(line.indexOf(':') + 1).trim();
+            if (line.startsWith(' ') || line.startsWith('\t')) {
+                if (lastType) {
+                    let value: string = line.trim();
+                    let oldValue: string = this.entryMap.get(lastType) as string;
+                    this.entryMap.set(lastType, oldValue + ' ' + value);
+                }
+                continue;
+            }
+            let separator: number = line.indexOf(':');
+            if (separator === -1) {
+                continue;
+            }
+            let type: string = line.substring(0, separator).trim();
+            let value: string = line.substring(separator + 1).trim();
+            lastType = type;
             if (!this.entryMap.has(type)) {
                 this.entryMap.set(type, value);
             } else {
