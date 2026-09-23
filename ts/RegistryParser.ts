@@ -390,6 +390,7 @@ export class RegistryParser {
     }
 
     normalizeCode(code: string): string | undefined {
+        code = code.replaceAll('_', '-');
         let parts: string[] = code.split('-');
         if (parts.length == 1) {
             // language part only
